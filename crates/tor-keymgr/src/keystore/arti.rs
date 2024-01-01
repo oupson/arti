@@ -273,7 +273,10 @@ impl Keystore for ArtiNativeKeystore {
                 let key_type = KeyType::from(extension);
                 // Strip away the file extension
                 let path = path.with_extension("");
-                ArtiPath::new(path.display().to_string())
+                let display_path = path.iter()
+                    .map(|component| component.to_string_lossy())
+                    .join("/");
+                ArtiPath::new(display_path)
                     .map(|path| Some((path.into(), key_type)))
                     .map_err(|e| {
                         malformed_err(&path, err::MalformedPathError::InvalidArtiPath(e)).into()
