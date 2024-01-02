@@ -348,6 +348,21 @@ impl OnionService {
     pub fn stop(&self) {
         todo!() // TODO hss
     }
+
+    /// Get the .onion associated with this onion service.
+    pub fn hostname(&self) -> Result<String, tor_keymgr::Error> {
+        let mut inner = self.inner.lock().expect("poisoned lock");
+
+        let nickname = {
+            let config : postage::watch::Ref<'_, Arc<OnionServiceConfig>> = postage::watch::Sender::borrow(&mut inner.config_tx);
+            config.nickname().clone()
+        };
+        let pub_hsid_spec = HsIdPublicKeySpecifier::new(nickname);
+
+        let key = inner.keymgr.get::<HsIdKey>(&pub_hsid_spec)?.expect("Failed to get key from keystore");
+
+        Ok(key.id().to_string())
+    }
 }
 
 /// Generate the identity key of the service, unless it already exists or `offline_hsid` is `true`.
